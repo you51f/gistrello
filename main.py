@@ -34,7 +34,9 @@ logging.info('Starting Bot...')
 # Boards handler
 @dp.message_handler(commands=['boards'])
 async def boards_command(message: types.Message):
+    global operation
     boards = "Boards:"
+    operation = "board_operation"
     response = requests.get(
         f'https://api.trello.com/1/members/me/boards?fields=name,url&key={Trello_API_KEY}&token={Trello_Token}').json()
     for board in response:
@@ -92,7 +94,6 @@ async def action_in_board(call: types.CallbackQuery):
         operation = "add_board"
         await call.message.answer("Enter the New board name:")
     if call.data == "edit_board":
-        operation = "edit_board"
         edit_board_key_board_inline = InlineKeyboardMarkup()
         # print(x)
         response = requests.get(
@@ -108,11 +109,11 @@ async def action_in_board(call: types.CallbackQuery):
         operation = "search_card_by_name"
         await call.message.answer("Search card by card name:")
     else:
-        if operation == "edit_board":
+        if operation == "board_operation" and call.data != "edit_board":
             boardId = call.data
             operation = "edit_selected_board"
             await call.message.answer("Enter the new board name:")
-        elif operation == "choose_board":
+        if operation == "choose_board":
             boardId = call.data
             lists_key_board_inline = InlineKeyboardMarkup()
             response = requests.get(
